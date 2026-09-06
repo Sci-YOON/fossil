@@ -436,7 +436,7 @@ pre:[
   index:false,
   feat:['남세균이 끈끈한 점액으로 퇴적물 입자를 붙잡아 얇은 층이 겹겹이 쌓인 돔 모양 구조','광합성으로 산소를 내보내 대기와 바다의 산소 농도를 높였다','호주 샤크만 등지에서 지금도 자라는 것을 볼 수 있다'],
   env:'햇빛이 닿는 얕고 따뜻한 바다에서만 만들어집니다. 스트로마톨라이트가 있다면 그곳은 수심이 얕은 연안이었다는 뜻입니다.',
-  wiki:['스트로마톨라이트','Stromatolite']},
+  wiki:['Stromatolite','스트로마톨라이트']},
  {n:'남세균', s:'Cyanobacteria', icon:'microbe',
   cls:'원핵생물(세균)', age:'약 35억 년 전 ~ 현재',
   index:false,
@@ -603,8 +603,11 @@ async function fetchWiki(titles){
   for(const t of titles){
     const lang = /^[\x00-\x7F ()–'.-]+$/.test(t) ? 'en' : 'ko';
     try{
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 6000);
       const r = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`,
-                            {headers:{'Accept':'application/json'}});
+                            {headers:{'Accept':'application/json'}, signal: ctrl.signal});
+      clearTimeout(timer);
       if(!r.ok) continue;
       const j = await r.json();
       if(j.type === 'disambiguation') continue;
