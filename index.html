@@ -18,6 +18,7 @@
   --rule:#CFD5CF;
 
   --pre:#A03C86;   --pre-fill:#F4E8F2;
+  --pre1:#6E2A5C;  --pre2:#A03C86;  --pre3:#C77BB2;
   --pal:#2E7D5B;   --pal-fill:#E2F0E8;
   --mes:#2A6FA8;   --mes-fill:#E2ECF5;
   --cen:#B0761C;   --cen-fill:#F7EEDD;
@@ -105,8 +106,20 @@ body{
 /* ---------- 시간 막대 ---------- */
 .timescale{margin-bottom:20px}
 .tsbar{display:flex; height:26px; border-radius:3px; overflow:hidden; border:1px solid var(--rule)}
-.tsseg{opacity:.34; transition:opacity .2s}
+.tsseg{
+  opacity:.34; transition:opacity .2s; border:0; padding:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-family:var(--sans);
+}
+.tsseg span{
+  font-size:.62rem; color:#fff; font-weight:500; white-space:nowrap;
+  text-shadow:0 1px 3px rgba(0,0,0,.45);
+}
 .tsseg.on{opacity:1}
+.tslegend{display:flex; flex-wrap:wrap; gap:4px 16px; margin-top:8px}
+.tslegend div{display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--muted)}
+.tslegend i{width:10px; height:10px; border-radius:2px; flex:none}
+.tsnote{font-size:.78rem; color:var(--muted); margin:7px 0 0; line-height:1.6}
+.tsnote b{color:var(--ink)}
 .tsbar.linear{position:relative; display:block; background:linear-gradient(90deg,var(--pal-fill),var(--mes-fill) 60%,var(--cen-fill)); height:22px}
 .tsmark{
   position:absolute; top:0; bottom:0; width:3px; background:var(--ext);
@@ -323,7 +336,7 @@ footer ul{margin:0 0 10px; padding-left:1.1em}
   <section class="panel" id="panel2" aria-live="polite">
     <div class="panel-head">
       <h2 id="p2-title">시대 선택</h2>
-      <span class="hint" id="p2-hint">시대를 선택하면 표준 화석이 나타납니다</span>
+      <span class="hint" id="p2-hint">시대를 고르면 표준 화석이 나타납니다</span>
     </div>
 
     <div class="timescale" id="timescale"></div>
@@ -366,7 +379,7 @@ footer ul{margin:0 0 10px; padding-left:1.1em}
 
     <div class="q">
       <div class="qt"><span class="qn">2.</span>
-        <span class="qtx">중생대의 대표적인 표준 화석을 쓰고, 이를 통해 유추할 수 있는 중생대의 고기후를 예측해 보세요.</span>
+        <span class="qtx">고생대의 대표적인 표준 화석을 쓰고, 이를 통해 유추할 수 있는 고생대의 고기후를 예측해 보세요.</span>
       </div>
       <textarea id="a2" data-key="q2" placeholder="화석 이름 → 그 생물이 살던 환경 → 그때의 기후 순서로 이어서 써 보세요."></textarea>
       <div class="qmeta"><span id="c2">0자</span></div>
@@ -417,9 +430,19 @@ const GOALS = {
   ]
 };
 
+/* 시간 막대용 세부 구간 (누대 단위) */
+const PHASES = [
+  {era:'pre', name:'명왕누대', short:'명왕', range:'약 46억 ~ 40억 년 전', span:600,  col:'--pre1'},
+  {era:'pre', name:'시생누대', short:'시생', range:'약 40억 ~ 25억 년 전', span:1500, col:'--pre2'},
+  {era:'pre', name:'원생누대', short:'원생', range:'약 25억 ~ 5억 3900만 년 전', span:1961, col:'--pre3'},
+  {era:'pal', name:'고생대', short:'고생', range:'약 5억 3900만 ~ 2억 5200만 년 전', span:287, col:'--pal'},
+  {era:'mes', name:'중생대', short:'중생', range:'약 2억 5200만 ~ 6600만 년 전', span:186, col:'--mes'},
+  {era:'cen', name:'신생대', short:'신생', range:'약 6600만 년 전 ~ 현재', span:66,  col:'--cen'}
+];
+
 const ERAS = [
   {id:'pre', name:'선캄브리아 시대', range:'약 46억 ~ 5억 3900만 년 전', span:4061, color:'pre',
-   note:'지구 역사의 약 88%를 차지하지만, 몸에 단단한 부분이 없고 오랜 지각 변동을 겪어 화석이 매우 드뭅니다.'},
+   note:'명왕누대·시생누대·원생누대를 합친 기간으로 지구 역사의 약 88%를 차지합니다. 그러나 몸에 단단한 부분이 없고 오랜 지각 변동을 겪어 화석이 매우 드뭅니다.'},
   {id:'pal', name:'고생대', range:'약 5억 3900만 ~ 2억 5200만 년 전', span:287, color:'pal',
    note:'바다 생물이 폭발적으로 늘고 육상으로 진출한 시기입니다. 말기의 대멸종으로 삼엽충과 방추충이 사라집니다.'},
   {id:'mes', name:'중생대', range:'약 2억 5200만 ~ 6600만 년 전', span:186, color:'mes',
@@ -549,7 +572,7 @@ const EXTINCTIONS = [
   after:'빈자리를 상어류와 경골어류가 채웠고, 척추동물이 육상으로 진출하는 계기가 되었습니다.'},
  {no:3, n:'페름기 말 대멸종', age:'약 2억 5200만 년 전', ageMa:252, pct:56,
   wiki:['페름기-트라이아스기 대멸종','Permian–Triassic extinction event'],
-  cause:['시베리아 트랩에서 100만 년 가까이 이어진 초대형 화산 활동','이산화 탄소와 메테인이 급증해 지구가 크게 더워지고 바다가 산성화','바닷물에 녹은 산소가 줄어 무산소 상태가 널리 퍼짐','판게아 형성으로 해양 생물이 많이 서식하는 얕은 바다인 대륙붕 면적이 감소되었음'],
+  cause:['시베리아 트랩에서 100만 년 가까이 이어진 초대형 화산 활동','이산화 탄소와 메테인이 급증해 지구가 크게 더워지고 바다가 산성화','바닷물에 녹은 산소가 줄어 무산소 상태가 널리 퍼짐','판게아 형성으로 인해 해양 생물이 많이 서식하는 얕은 바다인 대륙붕 면적이 감소되었음'],
   victim:['해양 종의 약 81%가 사라진 지질 시대 최대 규모의 멸종','삼엽충과 방추충이 완전히 자취를 감춤'],
   after:'생태계가 회복되는 데 수백만 년이 걸렸고, 빈자리에서 파충류가 크게 번성해 중생대가 열렸습니다.'},
  {no:4, n:'트라이아스기 말 대멸종', age:'약 2억 100만 년 전', ageMa:201, pct:47,
@@ -651,18 +674,26 @@ function renderGoals(){
 function renderTimescale(){
   const ts = $('timescale');
   if(S.mode === 'era'){
-    const total = ERAS.reduce((a,e)=>a+e.span,0);
+    const total = PHASES.reduce((a,p)=>a+p.span,0);
     ts.innerHTML = `
       <div class="tsbar">
-        ${ERAS.map(e=>`<div class="tsseg ${S.era===e.id?'on':''}"
-            style="flex:${e.span} 0 0; background:${cssVar('--'+e.color)}"
-            title="${e.name} · ${e.range}"></div>`).join('')}
+        ${PHASES.map(p=>{
+          const share = p.span/total*100;
+          return `<button class="tsseg ${S.era===p.era?'on':''}" data-era="${p.era}"
+            style="flex:${p.span} 0 0; background:${cssVar(p.col)}"
+            title="${p.name} · ${p.range}" aria-label="${p.name}"
+            >${share>=10?`<span>${p.short}</span>`:''}</button>`;
+        }).join('')}
       </div>
-      <div class="tscap">
-        <span>46억 년 전</span>
-        <span>막대 길이는 실제 지속 기간에 비례합니다 — 선캄브리아 시대가 지구 역사의 약 88%</span>
-        <span>현재</span>
-      </div>`;
+      <div class="tslegend">
+        ${PHASES.map(p=>`<div><i style="background:${cssVar(p.col)}"></i>${p.name} · ${p.range}</div>`).join('')}
+      </div>
+      <p class="tsnote"><b>선캄브리아 시대</b>는 명왕누대·시생누대·원생누대를 모두 합친 기간(약 46억 ~ 5억 3900만 년 전)으로,
+      지구 역사의 약 88%를 차지합니다. 나머지 고생대·중생대·신생대를 합쳐 <b>현생누대</b>라고 부릅니다.
+      막대 길이는 실제 지속 기간에 비례하며, 막대를 눌러 시대를 선택할 수도 있습니다.</p>`;
+    ts.querySelectorAll('.tsseg').forEach(b=>{
+      b.onclick = ()=> selectEra(b.dataset.era);
+    });
   }else{
     const scale = 541;
     ts.innerHTML = `
